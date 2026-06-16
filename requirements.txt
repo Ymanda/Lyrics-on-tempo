@@ -1,0 +1,7 @@
+# Coeur du calage syllabique (recommande, mais fallback interne si absent) :
+pyphen>=0.14
+
+# Exports MusicXML / MIDI (optionnel : seulement pour la commande `export`) :
+music21>=9.1
+
+# tkinter est livre avec Python (pas de pip). Sur Debian/Ubuntu : apt install python3-tk

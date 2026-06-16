@@ -1,0 +1,38 @@
+{
+  "title": "La Marseillaise",
+  "composer": "C. Rouget de Lisle (domaine public)",
+  "meter": "4/4",
+  "tempo_bpm": 75,
+  "key": "F",
+  "abc_source": "marseillaise.abc",
+  "source_url": "https://abcnotation.com/tunePage?a=serpent.serpentpublications.org/~lconrad/music/delisle/marseillaise/0000",
+  "note": "Le champ 'syllables' est le nombre de syllabes CHANTEES de reference (couplet 1). C'est la cible de calage. Les melismes (une syllabe tenue sur plusieurs notes) donnent un peu de souplesse : voir 'melisma_slack'.",
+  "sections": [
+    {
+      "id": "couplet",
+      "label": "Couplet",
+      "phrases": [
+        { "id": "c1", "ref_text": "Allons enfants de la Patrie",        "syllables": 9, "melisma_slack": 1 },
+        { "id": "c2", "ref_text": "Le jour de gloire est arrive !",      "syllables": 8, "melisma_slack": 1 },
+        { "id": "c3", "ref_text": "Contre nous de la tyrannie",          "syllables": 9, "melisma_slack": 0 },
+        { "id": "c4", "ref_text": "L'etendard sanglant est leve",        "syllables": 8, "melisma_slack": 0 },
+        { "id": "c5", "ref_text": "L'etendard sanglant est leve",        "syllables": 8, "melisma_slack": 1 },
+        { "id": "c6", "ref_text": "Entendez-vous dans nos campagnes",    "syllables": 9, "melisma_slack": 0 },
+        { "id": "c7", "ref_text": "Mugir ces feroces soldats ?",        "syllables": 8, "melisma_slack": 0 },
+        { "id": "c8", "ref_text": "Ils viennent jusque dans vos bras",   "syllables": 8, "melisma_slack": 0 },
+        { "id": "c9", "ref_text": "Egorger vos fils, vos compagnes !",   "syllables": 9, "melisma_slack": 1 }
+      ]
+    },
+    {
+      "id": "refrain",
+      "label": "Refrain",
+      "phrases": [
+        { "id": "r1", "ref_text": "Aux armes, citoyens",     "syllables": 6, "melisma_slack": 0 },
+        { "id": "r2", "ref_text": "Formez vos bataillons",    "syllables": 6, "melisma_slack": 0 },
+        { "id": "r3", "ref_text": "Marchons, marchons",       "syllables": 4, "melisma_slack": 0 },
+        { "id": "r4", "ref_text": "Qu'un sang impur",         "syllables": 4, "melisma_slack": 0 },
+        { "id": "r5", "ref_text": "Abreuve nos sillons",      "syllables": 6, "melisma_slack": 0 }
+      ]
+    }
+  ]
+}
