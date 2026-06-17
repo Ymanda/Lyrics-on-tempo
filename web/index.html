@@ -3,11 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Caleur de paroles — SafeZone</title>
+<title>Caleur de chansons — SafeZone</title>
+<meta name="description" content="Écris tes paroles sur un air connu — le calage syllabe par syllabe te dit en direct si ça tombe juste. Gratuit, sans compte, tout dans le navigateur.">
+<!-- Aperçus sociaux (Facebook / Discord / Telegram) — carte compacte (image à côté) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SafeZone FPV">
+<meta property="og:title" content="Caleur de chansons">
+<meta property="og:description" content="Écris tes paroles sur un air connu — le calage syllabe par syllabe te dit si ça tombe juste. Gratuit, sans compte.">
+<meta property="og:url" content="https://www.safezone-fpv.com/tools/lyrics_fitter/">
+<meta property="og:image" content="https://www.safezone-fpv.com/tools/lyrics_fitter/apercu.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Caleur de chansons">
+<meta name="twitter:description" content="Écris tes paroles sur un air connu — le calage syllabe par syllabe te dit si ça tombe juste. Gratuit, sans compte.">
+<meta name="twitter:image" content="https://www.safezone-fpv.com/tools/lyrics_fitter/apercu.png">
+<style>
+  details.help{ margin:.7rem 1.2rem 0; background:#161b22; border:1px solid #2a313c; border-radius:10px; padding:.5rem .9rem; }
+  details.help>summary{ cursor:pointer; color:#d6a93b; font-weight:600; font-size:.9rem; list-style:none; }
+  details.help>summary::-webkit-details-marker{ display:none; }
+  details.help .help-body{ color:#8b949e; font-size:.86rem; line-height:1.65; margin:.5rem 0 .2rem; }
+  details.help .help-body b{ color:#e6edf3; }
+  details.help .help-body code{ background:#1c232d; border:1px solid #2a313c; padding:.02rem .3rem; border-radius:4px; }
+</style>
 <style>
   :root {
     --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a313c;
-    --txt:#e6edf3; --muted:#8b949e; --accent:#d6a93b; --accent2:#3b82c4;
+    --txt:#e6edf3; --muted:#8b949e; --accent:#d6a93b;
     --ok:#3fb950; --slack:#d6a93b; --over:#f0533f; --under:#58a6ff;
   }
   * { box-sizing:border-box; }
@@ -20,29 +40,20 @@
   main { max-width:1080px; margin:0 auto; padding:1.2rem;
          display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
   @media (max-width:820px){ main{ grid-template-columns:1fr; } }
-  .panel { background:var(--panel); border:1px solid var(--line);
-           border-radius:10px; padding:1rem; }
-  .toolbar { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;
-             margin-bottom:.8rem; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:1rem; }
+  .toolbar { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; margin-bottom:.8rem; }
   select, button { font:inherit; }
-  select { background:var(--panel2); color:var(--txt); border:1px solid var(--line);
-           border-radius:7px; padding:.4rem .6rem; }
-  button { background:var(--panel2); color:var(--txt); border:1px solid var(--line);
-           border-radius:7px; padding:.45rem .8rem; cursor:pointer; }
+  select { background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:7px; padding:.4rem .6rem; }
+  button { background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:7px; padding:.45rem .8rem; cursor:pointer; }
   button:hover { border-color:var(--accent); }
-  button.primary { background:var(--accent); color:#1a1300; border-color:var(--accent);
-                   font-weight:600; }
   textarea { width:100%; min-height:340px; resize:vertical; background:var(--panel2);
              color:var(--txt); border:1px solid var(--line); border-radius:8px;
              padding:.7rem; font:14px/1.7 Consolas,Menlo,monospace; }
-  label.chk { color:var(--muted); font-size:.85rem; display:inline-flex; gap:.35rem;
-              align-items:center; cursor:pointer; }
+  label.chk { color:var(--muted); font-size:.85rem; display:inline-flex; gap:.35rem; align-items:center; cursor:pointer; }
   .meta { color:var(--muted); font-size:.82rem; margin:.2rem 0 .8rem; }
   table { width:100%; border-collapse:collapse; font-size:.88rem; }
-  th,td { padding:.4rem .5rem; text-align:left; border-bottom:1px solid var(--line);
-          vertical-align:top; }
-  th { color:var(--muted); font-weight:600; font-size:.78rem; text-transform:uppercase;
-       letter-spacing:.03em; }
+  th,td { padding:.4rem .5rem; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; }
   td.num { text-align:center; font-variant-numeric:tabular-nums; }
   td.ref { color:var(--muted); font-style:italic; }
   td.strong { font-weight:700; }
@@ -55,82 +66,46 @@
   tr.st-under { background:rgba(88,166,255,.07); }
   #summary { margin-top:.7rem; color:var(--muted); font-size:.85rem; }
   .hint { color:var(--muted); font-size:.78rem; margin-top:.6rem; line-height:1.5; }
-  .hint code { background:var(--panel2); padding:.05rem .3rem; border-radius:4px;
-               border:1px solid var(--line); }
+  .hint code { background:var(--panel2); padding:.05rem .3rem; border-radius:4px; border:1px solid var(--line); }
   footer { text-align:center; color:var(--muted); font-size:.78rem; padding:1.5rem; }
-
-  /* --- Sas d'animation --- */
-  #intro { position:fixed; inset:0; background:radial-gradient(circle at 50% 40%, #1a2230, #06080c 70%);
-           display:none; flex-direction:column; align-items:center; justify-content:center;
-           z-index:50; cursor:pointer; transition:opacity .45s; }
-  #intro.fade { opacity:0; }
-  #intro-stage { width:200px; height:200px; border-radius:50%;
-                 background:var(--accent); position:relative; animation:halo 1.6s ease-in-out infinite;
-                 display:flex; align-items:center; justify-content:center; color:#1a1300;
-                 font-weight:700; font-size:.9rem; text-align:center; }
-  @keyframes halo { 0%,100%{ box-shadow:0 0 0 0 rgba(214,169,59,.5);} 50%{ box-shadow:0 0 60px 18px rgba(214,169,59,.25);} }
-  #intro .title { margin-top:1.4rem; letter-spacing:.08em; color:var(--accent); }
-  #intro-skip { margin-top:1.2rem; color:var(--muted); font-size:.8rem; opacity:.35;
-                pointer-events:none; transition:opacity .3s; }
-  #intro-skip.ready { opacity:1; pointer-events:auto; text-decoration:underline; }
-
-  /* --- Modale inscription --- */
-  #signup { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none;
-            align-items:center; justify-content:center; z-index:60; }
-  #signup .box { background:var(--panel); border:1px solid var(--line); border-radius:12px;
-                 padding:1.6rem; max-width:380px; text-align:center; }
-  #signup h3 { margin:.2rem 0 .6rem; }
-  #signup p { color:var(--muted); font-size:.9rem; }
-  #signup .actions { display:flex; flex-direction:column; gap:.6rem; margin-top:1rem; }
-  #signup a.btn { display:block; padding:.6rem; border-radius:8px; text-decoration:none;
-                  font-weight:600; }
-  #signup a.c2 { background:var(--accent); color:#1a1300; }
-  #signup a.dc { background:#5865F2; color:#fff; }
-  #signup .close { margin-top:.9rem; color:var(--muted); font-size:.8rem; cursor:pointer; }
+  #toast { position:fixed; left:50%; bottom:1.4rem; transform:translateX(-50%) translateY(2rem);
+           background:var(--accent); color:#1a1300; font-weight:600; padding:.6rem 1rem;
+           border-radius:8px; opacity:0; pointer-events:none; transition:all .3s; font-size:.9rem; }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<div id="intro">
-  <div id="intro-stage">SafeZone</div>
-  <div class="title">SafeZone · Outils</div>
-  <div id="intro-skip">Entrer →</div>
-</div>
-
-<div id="signup">
-  <div class="box">
-    <h3>Crée ton compte</h3>
-    <p id="signup-reason"></p>
-    <p>Le jeu est libre et illimité. Pour <b>exporter</b> ta partition / ton MIDI
-       et <b>sauvegarder</b> tes paroles, rejoins-nous :</p>
-    <div class="actions">
-      <a id="signup-c2" class="btn c2" href="#">S'inscrire sur La Commune 2.0</a>
-      <a id="signup-discord" class="btn dc" href="#" target="_blank" rel="noopener">Rejoindre via Discord</a>
-    </div>
-    <div id="signup-close" class="close">Plus tard — continuer à jouer</div>
-  </div>
-</div>
-
 <header>
   <h1>🎵 Caleur de paroles</h1>
-  <span class="sub">écris tes paroles sur un air connu — l'outil compte les syllabes en direct</span>
+  <span class="sub">écris tes paroles sur un air connu — l'outil compte les syllabes en direct. Libre, sans compte.</span>
 </header>
+
+<details class="help">
+  <summary>📖 Mode d'emploi</summary>
+  <div class="help-body">
+    <b>1.</b> Choisis un air dans le menu déroulant (ou « Paroles d'origine » pour partir du texte connu).<br>
+    <b>2.</b> Écris tes paroles, <b>un vers par ligne</b>. À droite, chaque vers passe au <b>vert</b> quand le nombre de syllabes tombe juste — orange = mélisme toléré, rouge = trop, bleu = pas assez.<br>
+    <b>3.</b> « Écouter l'air » joue la mélodie. Si le français est ambigu, ajuste avec les marqueurs collés au mot : <code>+</code> ajoute une syllabe, <code>=</code> en retire, <code>_</code> force une coupure.<br>
+    <b>4.</b> Quand ça te plaît : <b>⬇ MIDI</b> / <b>⬇ Partition</b> (ouvre dans MuseScore) / <b>⬇ Paroles</b>, ou <b>🔗 Lien</b> pour partager. Ton texte est gardé automatiquement sur cet appareil.
+  </div>
+</details>
 
 <main>
   <section class="panel">
     <div class="toolbar">
       <select id="melody-select" aria-label="Mélodie"></select>
       <button id="play">▶ Écouter l'air</button>
-      <button id="tpl">Charger les paroles d'origine</button>
+      <button id="tpl">Paroles d'origine</button>
     </div>
     <div class="meta" id="melody-meta"></div>
     <textarea id="lyrics" placeholder="Un vers par ligne…
-Tape tes paroles ici. L'outil te dit, à droite, si chaque vers tombe juste sur la mélodie."></textarea>
+Tape tes paroles ici. À droite, l'outil te dit si chaque vers tombe juste sur la mélodie."></textarea>
     <label class="chk"><input type="checkbox" id="sung" checked> comptage chanté (le « e » muet compte)</label>
     <p class="hint">
       Le français est ambigu (« nation » = 2 ou 3 ?). Marqueurs manuels collés au mot :
-      <code>+</code> ajoute une syllabe (diérèse), <code>=</code> en retire une (synérèse),
-      <code>_</code> force une coupure.
+      <code>+</code> ajoute une syllabe, <code>=</code> en retire une, <code>_</code> force une coupure.
+      Ton texte est gardé automatiquement dans ce navigateur.
     </p>
   </section>
 
@@ -138,8 +113,10 @@ Tape tes paroles ici. L'outil te dit, à droite, si chaque vers tombe juste sur 
     <div class="toolbar">
       <strong>Calage</strong>
       <span style="flex:1"></span>
-      <button id="export">⬇ Exporter (MIDI / partition)</button>
-      <button id="save" class="primary">💾 Sauvegarder</button>
+      <button id="dl-midi">⬇ MIDI</button>
+      <button id="dl-xml">⬇ Partition</button>
+      <button id="dl-txt">⬇ Paroles</button>
+      <button id="share">🔗 Lien</button>
     </div>
     <table id="grid">
       <thead><tr><th>Vers d'origine</th><th>Cible</th><th>Ton vers</th><th>Syl.</th><th>Δ</th><th>État</th></tr></thead>
@@ -150,8 +127,10 @@ Tape tes paroles ici. L'outil te dit, à droite, si chaque vers tombe juste sur 
 </main>
 
 <footer>
-  Outil libre · mélodie du domaine public · tes paroles t'appartiennent.
+  Outil libre · mélodie du domaine public · tes paroles t'appartiennent · aucune donnée envoyée.
 </footer>
+
+<div id="toast"></div>
 
 <script src="fitter.js"></script>
 <script src="melodies.js"></script>

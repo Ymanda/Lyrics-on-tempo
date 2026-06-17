@@ -1,0 +1,21 @@
+# Fins de ligne : on stocke et on extrait en LF partout (stable multi-plateforme).
+* text=auto eol=lf
+
+# Fichiers texte explicites
+*.py        text eol=lf
+*.js        text eol=lf
+*.json      text eol=lf
+*.html      text eol=lf
+*.css       text eol=lf
+*.md        text eol=lf
+*.txt       text eol=lf
+*.abc       text eol=lf
+*.musicxml  text eol=lf
+*.gitignore text eol=lf
+
+# Fichiers binaires : pas de conversion de fins de ligne
+*.mid       binary
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary

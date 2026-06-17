@@ -38,14 +38,15 @@ lyrics_fitter/
 
 ## Version web (navigateur, pour tout le monde)
 
-Le dossier `web/` contient une version **100 % statique**, utilisable sans rien
-installer : on tape ses paroles, le calage syllabe par syllabe s'affiche en direct
-(vert / orange mélisme / rouge), on écoute l'air (Web Audio). Pensée pour un espace
-« Outils » sur safezone-fpv.com, avec un sas d'animation à l'entrée (1×/jour) et un
-modèle **jeu libre illimité** ; l'export (MIDI/partition) et la sauvegarde invitent
-à créer un compte (La Commune 2.0 ou Discord). Même moteur que la version Python,
-porté en JavaScript (parité vérifiée). Déploiement et intégration de l'animation :
-voir `web/DEPLOY.md`. Pour essayer tout de suite : ouvrir `web/index.html`.
+Le dossier `web/` contient une version **100 % statique et locale au navigateur**,
+utilisable sans rien installer et **sans aucun compte** : on tape ses paroles, le
+calage syllabe par syllabe s'affiche en direct (vert / orange mélisme / rouge), on
+écoute l'air (Web Audio). Tout est libre : **export MIDI et partition (MusicXML)
+générés dans le navigateur**, téléchargement des paroles (.txt), mémoire automatique
+(localStorage) et lien partageable (paroles encodées dans l'URL). Aucune donnée
+n'est envoyée à un serveur. Même moteur que la version Python, porté en JavaScript
+(parité vérifiée). Déploiement : voir `web/DEPLOY.md`. Pour essayer tout de suite :
+ouvrir `web/index.html`.
 
 ## Installation
 
