@@ -10,12 +10,12 @@
 <meta property="og:site_name" content="SafeZone FPV">
 <meta property="og:title" content="Caleur de chansons">
 <meta property="og:description" content="Écris tes paroles sur un air connu — le calage syllabe par syllabe te dit si ça tombe juste. Gratuit, sans compte.">
-<meta property="og:url" content="https://www.safezone-fpv.com/tools/lyrics_fitter/">
-<meta property="og:image" content="https://www.safezone-fpv.com/tools/lyrics_fitter/apercu.png">
+<meta property="og:url" content="https://www.safezone-fpv.com/RC-FVP-RCA/tools/lyrics_fitter/">
+<meta property="og:image" content="https://www.safezone-fpv.com/RC-FVP-RCA/tools/lyrics_fitter/apercu.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Caleur de chansons">
 <meta name="twitter:description" content="Écris tes paroles sur un air connu — le calage syllabe par syllabe te dit si ça tombe juste. Gratuit, sans compte.">
-<meta name="twitter:image" content="https://www.safezone-fpv.com/tools/lyrics_fitter/apercu.png">
+<meta name="twitter:image" content="https://www.safezone-fpv.com/RC-FVP-RCA/tools/lyrics_fitter/apercu.png">
 <style>
   details.help{ margin:.7rem 1.2rem 0; background:#161b22; border:1px solid #2a313c; border-radius:10px; padding:.5rem .9rem; }
   details.help>summary{ cursor:pointer; color:#d6a93b; font-weight:600; font-size:.9rem; list-style:none; }
@@ -23,6 +23,23 @@
   details.help .help-body{ color:#8b949e; font-size:.86rem; line-height:1.65; margin:.5rem 0 .2rem; }
   details.help .help-body b{ color:#e6edf3; }
   details.help .help-body code{ background:#1c232d; border:1px solid #2a313c; padding:.02rem .3rem; border-radius:4px; }
+  .impbtn{ cursor:pointer; }
+  .impbtn input{ display:none; }
+  .disclaimer{ color:#c9a227; font-size:.78rem; line-height:1.5; margin:.5rem 0; }
+  .pdform{ display:flex; flex-direction:column; gap:.4rem; margin:.4rem 0; }
+  .pdform input{ background:#1c232d; color:#e6edf3; border:1px solid #2a313c; border-radius:6px; padding:.4rem .5rem; font:inherit; }
+  .pdform button{ align-self:flex-start; }
+  #pd-verdict{ font-size:.88rem; font-weight:600; margin:.3rem 0; padding:.4rem .6rem; border-radius:6px; }
+  #pd-verdict.ok{ background:rgba(63,185,80,.14); color:#3fb950; }
+  #pd-verdict.warn{ background:rgba(214,169,59,.16); color:#d6a93b; }
+  #pd-verdict.no{ background:rgba(240,83,63,.14); color:#f0533f; }
+  .midi-sources{ margin:.4rem 0; }
+  .url-row{ display:flex; gap:.4rem; margin:.3rem 0; }
+  .url-row input{ flex:1 1 auto; min-width:0; background:#1c232d; color:#e6edf3; border:1px solid #2a313c; border-radius:6px; padding:.4rem .5rem; font:inherit; }
+  .ready-midis{ display:flex; flex-wrap:wrap; gap:.4rem; margin:.3rem 0; }
+  .ready-btn{ background:#1c232d; color:#e6edf3; border:1px solid #2a313c; border-radius:7px; padding:.35rem .7rem; cursor:pointer; font:inherit; }
+  .ready-btn:hover{ border-color:var(--accent); }
+  body.dragging{ outline:3px dashed var(--accent); outline-offset:-10px; }
 </style>
 <style>
   :root {
@@ -96,7 +113,8 @@
     <div class="toolbar">
       <select id="melody-select" aria-label="Mélodie"></select>
       <button id="play">▶ Écouter l'air</button>
-      <button id="tpl">Paroles d'origine</button>
+      <button id="tpl">📥 Charger les paroles</button>
+      <label class="impbtn"><button type="button" onclick="this.nextElementSibling.click()">⬆ Importer un MIDI</button><input type="file" id="import-midi" accept=".mid,.midi,audio/midi,audio/x-midi"></label>
     </div>
     <div class="meta" id="melody-meta"></div>
     <textarea id="lyrics" placeholder="Un vers par ligne…
@@ -107,12 +125,46 @@ Tape tes paroles ici. À droite, l'outil te dit si chaque vers tombe juste sur l
       <code>+</code> ajoute une syllabe, <code>=</code> en retire une, <code>_</code> force une coupure.
       Ton texte est gardé automatiquement dans ce navigateur.
     </p>
+    <p class="disclaimer">⚠️ Les MIDI que tu importes restent dans ton navigateur (rien n'est envoyé). Tu es seul responsable de n'utiliser que des mélodies libres de droits.</p>
+    <div class="midi-sources">
+      <div id="ready-midis" class="ready-midis"></div>
+      <div class="url-row">
+        <input id="url-input" placeholder="…ou colle l'URL d'un fichier .mid">
+        <button id="url-load" type="button">Charger</button>
+      </div>
+      <details class="help">
+        <summary>🎼 Où trouver des mélodies MIDI ?</summary>
+        <div class="help-body">
+          Astuce : tu peux aussi <b>glisser-déposer</b> un fichier <code>.mid</code> n'importe où sur la page.<br>
+          Sources (n'utilise que des airs <b>libres de droits</b>) :
+          <a href="https://imslp.org" target="_blank" rel="noopener">IMSLP</a> (classique, domaine public) ·
+          <a href="https://musescore.com" target="_blank" rel="noopener">MuseScore</a> ·
+          <a href="https://www.kunstderfuge.com" target="_blank" rel="noopener">Kunst der Fuge</a> (classique, inscription requise) ·
+          <a href="https://www.songscription.ai/library" target="_blank" rel="noopener">Songscription</a> (audio→MIDI ; attention aux droits).
+        </div>
+      </details>
+    </div>
+    <details class="help">
+      <summary>🔎 Vérifier si une mélodie est libre de droits</summary>
+      <div class="help-body">
+        <div class="pdform">
+          <input id="pd-title" placeholder="Titre de l'air">
+          <input id="pd-author" placeholder="Auteur des paroles (indicatif)">
+          <input id="pd-composer" placeholder="Compositeur (obligatoire)">
+          <input id="pd-death" type="number" inputmode="numeric" placeholder="Année de décès du compositeur (obligatoire)">
+          <button id="pd-check" type="button">Vérifier</button>
+        </div>
+        <div id="pd-verdict"></div>
+        <p class="disclaimer">Verdict <b>indicatif et non garanti</b>. Critère réel : compositeur mort depuis plus de 70 ans (France/UE). En cas de doute, ne l'utilise pas. Tu restes responsable.</p>
+      </div>
+    </details>
   </section>
 
   <section class="panel">
     <div class="toolbar">
       <strong>Calage</strong>
       <span style="flex:1"></span>
+      <button id="fine">🎯 Calage fin</button>
       <button id="dl-midi">⬇ MIDI</button>
       <button id="dl-xml">⬇ Partition</button>
       <button id="dl-txt">⬇ Paroles</button>
@@ -135,6 +187,7 @@ Tape tes paroles ici. À droite, l'outil te dit si chaque vers tombe juste sur l
 <script src="fitter.js"></script>
 <script src="melodies.js"></script>
 <script src="player.js"></script>
+<script src="midi.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

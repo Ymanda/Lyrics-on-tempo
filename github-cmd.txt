@@ -1,0 +1,4 @@
+cd C:\PIO\lyrics_fitter
+git add .
+git commit -m "Caleur : import MIDI (glisser/URL/MIDI prêts), verif domaine public, ecran de calage fin, texte par defaut, Les Yeux noirs"
+git push

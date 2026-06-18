@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calage fin — Caleur de chansons</title>
+<style>
+  :root{ --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a313c; --txt:#e6edf3; --muted:#8b949e; --accent:#d6a93b;
+         --ok:#3fb950; --over:#f0533f; --under:#58a6ff; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--txt); font-family:-apple-system,Segoe UI,Roboto,sans-serif; }
+  header{ padding:.7rem 1rem; border-bottom:1px solid var(--line); display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
+  header h1{ font-size:1.05rem; margin:0; }
+  header .sp{ flex:1; }
+  button{ font:inherit; background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:7px; padding:.4rem .7rem; cursor:pointer; }
+  button:hover{ border-color:var(--accent); }
+  button.primary{ background:var(--accent); color:#1a1300; border-color:var(--accent); font-weight:600; }
+  input[type=text]{ background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:7px; padding:.4rem .6rem; font:inherit; }
+  main{ padding:1rem; }
+  #loader{ max-width:520px; margin:2rem auto; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1.4rem; }
+  #loader h2{ margin:.2rem 0 1rem; font-size:1.1rem; }
+  #loader .row{ margin:.6rem 0; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+  textarea{ width:100%; min-height:90px; background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:8px; padding:.6rem; font:13px/1.6 Consolas,monospace; }
+  .hint{ color:var(--muted); font-size:.8rem; line-height:1.5; }
+  .hint code{ background:var(--panel2); padding:.02rem .3rem; border-radius:4px; border:1px solid var(--line); }
+  .cl-row{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:.5rem .6rem; margin:.5rem 0; }
+  .cl-row.active{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .cl-head{ display:flex; align-items:center; gap:.5rem; margin-bottom:.35rem; }
+  .cl-text{ flex:1; color:var(--muted); font-style:italic; font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cl-play{ padding:.15rem .5rem; }
+  .cl-badge{ font-weight:700; font-size:.82rem; }
+  .cl-badge.ok{ color:var(--ok); } .cl-badge.over{ color:var(--over); } .cl-badge.under{ color:var(--under); }
+  .cl-beats{ position:relative; height:48px; width:100%; }
+  .cl-qcell{ position:absolute; top:0; bottom:0; border-right:1px solid rgba(148,163,184,.10); }
+  .cl-qcell.beat{ border-right-color:rgba(148,163,184,.30); }
+  .cl-qcell.odd{ background:rgba(255,255,255,.025); }
+  .cl-slot{ position:absolute; top:9px; height:30px; box-sizing:border-box; display:flex; align-items:center; justify-content:flex-start;
+            border-radius:5px; background:#0e1116; border:1px dashed var(--line); font-size:.78rem; cursor:pointer;
+            padding:0 3px; white-space:nowrap; overflow:visible; min-width:1.1em; }
+  .cl-slot.filled{ background:rgba(214,169,59,.16); border-style:solid; border-color:var(--accent); color:#fff; }
+  .cl-slot.gap{ background:rgba(240,83,63,.10); border-style:dotted; color:var(--over); }
+  .cl-over{ color:var(--over); font-size:.8rem; margin-top:.3rem; }
+  .cl-ph{ position:absolute; top:0; bottom:0; width:2px; background:var(--over); left:0; opacity:0; pointer-events:none; }
+  .cl-ph.run{ opacity:1; }
+  @keyframes clPh{ from{ left:0; } to{ left:100%; } }
+  footer{ color:var(--muted); font-size:.78rem; padding:1rem; text-align:center; }
+  #rotate{ display:none; }
+  @media (max-width:860px) and (orientation:portrait){
+    #app{ display:none; }
+    #rotate{ display:flex; position:fixed; inset:0; align-items:center; justify-content:center; flex-direction:column;
+             gap:1rem; text-align:center; padding:2rem; color:var(--muted); }
+    #rotate .ic{ font-size:3rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="rotate"><div class="ic">📱↻</div><div>Tourne ton téléphone en <b>paysage</b> pour le calage fin.</div></div>
+
+<div id="app">
+<header>
+  <h1>🎯 Calage fin</h1>
+  <span id="loop-state" style="color:var(--accent);font-size:.85rem"></span>
+  <span class="sp"></span>
+  <button id="stop">■ Stop</button>
+  <button id="save" class="primary">💾 Sauvegarder (3 fichiers)</button>
+  <button id="back">← Retour</button>
+</header>
+
+<main>
+  <div id="loader" style="display:none">
+    <h2>Charger une mélodie</h2>
+    <div class="row"><input type="text" id="title-in" placeholder="Titre de la chanson"></div>
+    <div class="row"><label><button type="button" onclick="this.nextElementSibling.click()">⬆ Charger un MIDI</button><input id="imp" type="file" accept=".mid,.midi,audio/midi" style="display:none"></label>
+      <button id="start-direct" class="primary">Démarrer</button></div>
+    <p class="hint">Tu peux aussi arriver ici depuis l'écran principal (bouton « Calage fin ») avec la mélodie et le texte déjà chargés. Ensuite tu tapes/colles ton texte ci-dessous, puis tu cales temps par temps.</p>
+  </div>
+
+  <div id="editor" style="display:none">
+    <textarea id="lyrics-area" placeholder="Un vers par ligne — chaque vers correspond à une ligne de la mélodie."></textarea>
+    <p class="hint">Chaque ligne de texte se cale sur la ligne de mélodie en face. Une case = un temps ; les ronds = les notes (slots). Clique « ▶ » pour écouter la ligne en boucle (curseur rouge). Clique un slot pour <b>insérer/retirer un blanc</b> et décaler les syllabes. Marqueurs : <code>+</code> ajoute une syllabe, <code>=</code> en retire, <code>_</code> coupe.</p>
+    <div id="grid"></div>
+    <div id="summary" class="hint"></div>
+  </div>
+</main>
+<footer>Calage fin · tout reste dans ton navigateur.</footer>
+</div>
+
+<script src="player.js"></script>
+<script src="midi.js"></script>
+<script src="calage.js"></script>
+</body>
+</html>

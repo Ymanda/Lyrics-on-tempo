@@ -9,6 +9,33 @@
   var $ = function (s) { return document.querySelector(s); };
   var state = { melody: null, phrases: [], sung: true, player: null };
   var SAVE_KEY = "lot_lyrics_v1";
+  // Texte affiché par défaut à la première arrivée (création « pouvoir au peuple »).
+  var DEFAULT_LYRICS = [
+    "Allons enfants de la Patrie",
+    "Le jour de gloire s'est envolé=",
+    "Contre nous de la tyrannie",
+    "L'étendard des sans dents= est levé",
+    "L'étendard des brav'= gens poing levé",
+    "Entendez-vous dans nos campagnes",
+    "Souffrir nos vaillants paysans+",
+    "Qualité,= santé les pieds devant",
+    "Sacrifiés pour l'Europe occupée",
+    "Aux urnes, citoyens",
+    "Votons c'est le chemin",
+    "Votons constituons=",
+    "Sus à l'IMPUNI==TE",
+    "Vive=la souverain'té"
+  ].join("\n");
+  // Textes considérés « par défaut » (remplaçables sans détruire le travail du visiteur).
+  var knownDefaults = {};
+  knownDefaults[DEFAULT_LYRICS] = true;
+  function maybeSetLyrics(text) {
+    if (!text) return;
+    var cur = $("#lyrics").value;
+    if (cur.trim() === "" || knownDefaults[cur]) {
+      $("#lyrics").value = text; knownDefaults[text] = true; render();
+    }
+  }
 
   /* ---------- syllabation simple (pour aligner les paroles à l'export) ---------- */
   function syllabify(line) {
@@ -154,6 +181,7 @@
   /* ------------------------------ mélodie / lecture ----------------------------- */
   function loadMelody(id) {
     state.melody = Melodies.byId[id];
+    state.songLyrics = (id === "marseillaise") ? DEFAULT_LYRICS : "";
     state.phrases = Melodies.phrasesFlat(state.melody);
     state.player = new LFPlayer.Player(state.melody.tempo_bpm);
     $("#melody-meta").textContent = state.melody.composer + " · " + state.melody.meter +
@@ -171,6 +199,101 @@
     $("#lyrics").value = state.phrases.map(function (p) { return p.ref_text; }).join("\n");
     render();
   }
+  // Recharge les paroles d'exemple/création de l'air courant (ou, à défaut, les vers de référence).
+  function loadSongLyrics() {
+    var t = state.songLyrics;
+    if (!t) { loadTemplate(); return; }
+    var cur = $("#lyrics").value;
+    if (cur.trim() !== "" && !knownDefaults[cur] &&
+        !window.confirm("Remplacer le texte actuel par les paroles d'exemple ?")) return;
+    $("#lyrics").value = t; knownDefaults[t] = true; render();
+  }
+
+  /* ------------------------------ import MIDI ----------------------------------- */
+  function encodeEvents(events) {
+    return events.map(function (e) { return e.rest ? ("R" + e.ql) : (e.midi + ":" + e.ql); }).join(" ");
+  }
+  function autoGrid(events) {
+    var phrases = [], count = 0, idx = 1;
+    events.forEach(function (e) {
+      if (e.rest) {
+        if (e.ql >= 0.75 && count > 0) { phrases.push({ id: "p" + idx, ref: "Phrase " + idx, syl: count, slack: 1 }); idx++; count = 0; }
+      } else count++;
+    });
+    if (count > 0) phrases.push({ id: "p" + idx, ref: "Phrase " + idx, syl: count, slack: 1 });
+    if (!phrases.length) phrases.push({ id: "p1", ref: "Mélodie", syl: 0, slack: 0 });
+    return [{ label: "Mélodie importée", phrases: phrases }];
+  }
+  function loadMelodyFromBuffer(buf, name) {
+    var res = LFMidi.readMIDI(buf);
+    if (!res.events.length) { toast("MIDI vide ou illisible."); return; }
+    Melodies.byId._import = {
+      id: "_import", title: "🎵 " + String(name || "MIDI").replace(/\.midi?$/i, ""),
+      composer: "MIDI importé — vérifie les droits", meter: "?",
+      tempo_bpm: res.tempo || 100, key: "?",
+      sections: autoGrid(res.events), notes: encodeEvents(res.events)
+    };
+    var sel = $("#melody-select");
+    if (!sel.querySelector('option[value="_import"]')) {
+      var o = document.createElement("option"); o.value = "_import"; o.textContent = "🎵 MIDI importé"; sel.appendChild(o);
+    }
+    sel.value = "_import";
+    loadMelody("_import");
+    var nn = res.events.filter(function (e) { return !e.rest; }).length;
+    toast("MIDI chargé (" + nn + " notes). Écoute pour vérifier l'air.");
+  }
+  function importMIDI(file) {
+    var rd = new FileReader();
+    rd.onload = function () { try { loadMelodyFromBuffer(rd.result, file.name); } catch (e) { toast("Import impossible : " + e.message); } };
+    rd.readAsArrayBuffer(file);
+  }
+  function loadMIDIFromUrl(url, name, lyrics) {
+    toast("Chargement…");
+    fetch(url).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.arrayBuffer(); })
+      .then(function (buf) { loadMelodyFromBuffer(buf, name || url.split("/").pop()); maybeSetLyrics(lyrics); })
+      .catch(function () { toast("Échec (CORS ou réseau). Télécharge le fichier puis dépose-le sur la page."); });
+  }
+  function populateReadyMidis() {
+    var box = $("#ready-midis"); if (!box) return;
+    fetch("midis/list.json").then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
+      (list || []).forEach(function (m) {
+        var b = document.createElement("button"); b.type = "button"; b.className = "ready-btn";
+        b.textContent = "▶ " + m.label;
+        b.title = (m.composer || "") + (m.note ? (" — " + m.note) : "");
+        b.addEventListener("click", function () {
+          loadMIDIFromUrl("midis/" + m.file, m.label);
+          var base = m.file.replace(/\.[^.]+$/, "");
+          fetch("midis/" + base + ".txt").then(function (r) { return r.ok ? r.text() : null; })
+            .then(function (t) { if (t) { state.songLyrics = t.replace(/\r\n/g, "\n").replace(/\s+$/, ""); maybeSetLyrics(state.songLyrics); } })
+            .catch(function () {});
+        });
+        box.appendChild(b);
+      });
+    }).catch(function () {});
+  }
+
+  /* --------------------- vérificateur « domaine public » ------------------------ */
+  function pdCheck() {
+    var composer = ($("#pd-composer").value || "").trim();
+    var death = parseInt($("#pd-death").value, 10);
+    var v = $("#pd-verdict");
+    if (!composer || !isFinite(death)) {
+      v.className = "warn";
+      v.textContent = "Renseigne le compositeur ET son année de décès (obligatoires).";
+      return;
+    }
+    var diff = new Date().getFullYear() - death;
+    if (death >= 1940 && death <= 1956) {
+      v.className = "warn";
+      v.textContent = "À VÉRIFIER : décès en " + death + " — des prorogations de guerre / « mort pour la France » peuvent prolonger la protection.";
+    } else if (diff > 70) {
+      v.className = "ok";
+      v.textContent = "Probablement LIBRE : " + composer + " décédé il y a " + diff + " ans (plus de 70). Vérifie quand même.";
+    } else {
+      v.className = "no";
+      v.textContent = "Probablement PROTÉGÉ : décès il y a " + diff + " ans (moins de 70). Libre vers " + (death + 71) + ".";
+    }
+  }
 
   /* ------------------------------ mémoire + partage ----------------------------- */
   function saveLocal() { try { localStorage.setItem(SAVE_KEY, $("#lyrics").value); } catch (e) {} }
@@ -179,7 +302,8 @@
   function initialText() {
     var h = location.hash.match(/[#&]t=([^&]+)/);
     if (h) { var t = b64decode(decodeURIComponent(h[1])); if (t) return t; }
-    try { return localStorage.getItem(SAVE_KEY) || ""; } catch (e) { return ""; }
+    try { var s = localStorage.getItem(SAVE_KEY); if (s !== null) return s; } catch (e) {}
+    return DEFAULT_LYRICS; // première visite : on montre la création par défaut
   }
   function shareLink() {
     var payload = "m=" + state.melody.id + "&t=" + encodeURIComponent(b64encode($("#lyrics").value));
@@ -209,7 +333,7 @@
     $("#lyrics").addEventListener("input", render);
     $("#sung").addEventListener("change", function () { state.sung = $("#sung").checked; render(); });
     $("#play").addEventListener("click", playMelody);
-    $("#tpl").addEventListener("click", loadTemplate);
+    $("#tpl").addEventListener("click", loadSongLyrics);
 
     $("#dl-midi").addEventListener("click", function () {
       download(slug() + ".mid", toMIDI(Melodies.parseNotes(state.melody.notes), state.melody.tempo_bpm), "audio/midi");
@@ -223,6 +347,39 @@
       download(slug() + ".txt", $("#lyrics").value, "text/plain"); toast("Paroles téléchargées.");
     });
     $("#share").addEventListener("click", shareLink);
+    $("#fine").addEventListener("click", function () {
+      try {
+        localStorage.setItem("lot_calage_session", JSON.stringify({
+          notes: state.melody.notes, tempo: state.melody.tempo_bpm,
+          title: state.melody.title, text: $("#lyrics").value
+        }));
+      } catch (e) {}
+      location.href = "calage.html";
+    });
+    var imp = $("#import-midi");
+    if (imp) imp.addEventListener("change", function (ev) {
+      if (ev.target.files && ev.target.files[0]) importMIDI(ev.target.files[0]);
+      ev.target.value = "";
+    });
+    var pdc = $("#pd-check");
+    if (pdc) pdc.addEventListener("click", pdCheck);
+
+    populateReadyMidis();
+    var urlBtn = $("#url-load");
+    if (urlBtn) urlBtn.addEventListener("click", function () {
+      var u = ($("#url-input").value || "").trim(); if (u) loadMIDIFromUrl(u);
+    });
+    var dz = document.body;
+    ["dragenter", "dragover"].forEach(function (ev) {
+      dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add("dragging"); });
+    });
+    ["dragleave", "drop"].forEach(function (ev) {
+      dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove("dragging"); });
+    });
+    dz.addEventListener("drop", function (e) {
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f && /\.midi?$/i.test(f.name)) importMIDI(f);
+    });
 
     loadMelody(startId);
   }

@@ -108,12 +108,35 @@ Règles automatiques appliquées : le `e` muet final **compte** en chant (mode p
 défaut) sauf élision devant une voyelle ; le `y` entre deux voyelles agit comme
 une consonne (`citoyens` = ci-to-yens = 3). Mode parlé disponible avec `--parle`.
 
-## Ajouter une autre mélodie
+## Ajouter une autre mélodie (chanson)
 
-Crée un nouveau couple `ma_melodie.abc` (la mélodie, format ABC) +
-`ma_melodie.json` (la grille). La grille suffit pour le calage du texte ; le `.abc`
-n'est requis que pour les exports MusicXML/MIDI. Le format ABC est texte, simple,
-et lisible/jouable par MuseScore, EasyABC, etc.
+**Quelles chansons ?** Seule la *mélodie* compte (tes paroles sont à toi). Une
+mélodie est utilisable si son **compositeur est mort depuis plus de 70 ans**
+(domaine public FR/UE), si elle est **traditionnelle/anonyme**, ou sous **licence
+libre**. Repère de prudence : compositeur mort avant ~1940 = sûr ; 1940–1956 = à
+vérifier (prorogations de guerre / mort pour la France) ; après = protégé. Donc
+oui pour L'Internationale (libre depuis 2017), Le Temps des cerises, La Carmagnole,
+Le Chant du départ, le folklore… mais **non** pour Brel/Brassens/Ferré/Trenet et
+**non** pour Le Chant des Partisans (protégé jusqu'en 2077).
+
+**Comment l'ajouter — avec l'importeur :**
+
+1. Récupère la mélodie en **MIDI ou MusicXML** depuis une source libre (MuseScore
+   domaine public, IMSLP, Mutopia).
+2. Écris un fichier paroles de référence (un vers par ligne) pour la grille.
+3. Lance :
+   ```bash
+   pip install music21
+   python import_song.py ma_melodie.musicxml --lyrics paroles.txt \
+       --id mon_air --title "Mon Air" --composer "X (domaine public)" --key C
+   ```
+4. Colle le bloc affiché dans `web/melodies.js` (et la copie du site), et ajoute
+   l'air à `Melodies.list` / `Melodies.byId`.
+5. **Vérifie à l'oreille** avec le bouton « Écouter l'air » : si le tempo/les notes
+   ne collent pas, ajuste le fichier source ou `tempo_bpm`.
+
+(Alternative manuelle : un couple `melodies/X.abc` + grille JSON, comme pour la
+Marseillaise.)
 
 ## Source de la partition
 
